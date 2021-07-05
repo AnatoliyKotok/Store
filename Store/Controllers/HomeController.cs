@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Store.Data;
 using Store.Models;
 using Store.Models.ViewModels;
+using Store.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -34,18 +36,57 @@ namespace Store.Controllers
         }
         public IActionResult Details(int?id)
         {
-            if (id == null || id == 0)
-            {
-                return NotFound();
-            }
-            var product = _db.Products.Find(id);
-            if (product == null)
-            {
-                return NotFound();
-            }
-            return View(product);
-        }
+            List<ShoppingCart> shoppingCartList = new List<ShoppingCart>();
 
+            if(HttpContext.Session.Get<IEnumerable<ShoppingCart>>(ENV.SessinCart)!=null&&
+                HttpContext.Session.Get<IEnumerable<ShoppingCart>>(ENV.SessinCart).Count() > 0)
+            {
+                shoppingCartList = HttpContext.Session.Get<List<ShoppingCart>>(ENV.SessinCart);
+            }
+            DeteilsVM deteilsVM = new DeteilsVM()
+            {
+                Product = _db.Products.Include(u => u.Category).Where(u => u.Id == id).FirstOrDefault(),
+                inCart=false
+            };
+           foreach(var item in shoppingCartList)
+            {
+                if (item.ProductId == id)
+                {
+                    deteilsVM.inCart = true;
+                }
+            }
+            return View(deteilsVM);
+        }
+        [HttpPost, ActionName("Details")]
+        public IActionResult DetailsPost(int id)
+        {
+            List<ShoppingCart> shoppingCartList = new List<ShoppingCart>();
+            if (HttpContext.Session.Get<IEnumerable<ShoppingCart>>(ENV.SessinCart) != null &&
+                HttpContext.Session.Get<IEnumerable<ShoppingCart>>(ENV.SessinCart).Count() > 0)
+            {
+                shoppingCartList = HttpContext.Session.Get<List<ShoppingCart>>(ENV.SessinCart);
+            }
+            shoppingCartList.Add(new ShoppingCart { ProductId = id });
+            HttpContext.Session.Set(ENV.SessinCart, shoppingCartList);
+            return RedirectToAction(nameof(Index));
+        }
+        public IActionResult RemoveFromCart(int id)
+        {
+            List<ShoppingCart> shoppingCartList = new List<ShoppingCart>();
+            if (HttpContext.Session.Get<IEnumerable<ShoppingCart>>(ENV.SessinCart) != null &&
+                HttpContext.Session.Get<IEnumerable<ShoppingCart>>(ENV.SessinCart).Count() > 0)
+            {
+                shoppingCartList = HttpContext.Session.Get<List<ShoppingCart>>(ENV.SessinCart);
+            }
+
+            var cart = shoppingCartList.FirstOrDefault(u => u.ProductId == id);
+            if (cart != null)
+            {
+                shoppingCartList.Remove(cart);
+            }
+            HttpContext.Session.Set(ENV.SessinCart, shoppingCartList);
+            return RedirectToAction(nameof(Index));
+        }
         public IActionResult Privacy()
         {
             return View();

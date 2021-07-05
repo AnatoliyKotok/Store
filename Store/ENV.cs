@@ -8,5 +8,6 @@ namespace Store
     public class ENV
     {
         public const string ImagePath = @"\Images\products\";
+        public const string SessinCart = "ShoppingCartSession";
     }
 }
