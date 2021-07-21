@@ -9,9 +9,7 @@ namespace Store.Models
     public class AppUser:IdentityUser
     {
 
-        public string Name { get; set; }
-        public string Surname { get; set; }
-        public int Age { get; set; }
+        public string FullName { get; set; }
         public string FaceBook { get; set; }
         public string Telegram { get; set; }
     }

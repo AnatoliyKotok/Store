@@ -25,17 +25,21 @@ namespace Store.Areas.Identity.Pages.Account
         private readonly UserManager<IdentityUser> _userManager;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
             ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            RoleManager<IdentityRole>roleManager
+            )
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            _roleManager = roleManager;
         }
 
         [BindProperty]
@@ -63,21 +67,20 @@ namespace Store.Areas.Identity.Pages.Account
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
             [Required]
-            [Display(Name = "Name")]
-            public string Name { get; set; }
-            [Required]
-            [Display(Name = "Surname")]
-            public string Surname { get; set; }
-            [DisplayName("Age")]
-            [Required]
-            [Range(18, int.MaxValue, ErrorMessage = "Show orders must bee more then 17")]
-            public int Age { get; set; }
+            [Display(Name = "Full Name")]
+            public string FullName { get; set; }
             public string FaceBook { get; set; }
             public string Telegram { get; set; }
         }
 
         public async Task OnGetAsync(string returnUrl = null)
         {
+
+            if(!await _roleManager.RoleExistsAsync(ENV.AdminRole))
+            {
+                await _roleManager.CreateAsync(new IdentityRole(ENV.AdminRole));
+                await _roleManager.CreateAsync(new IdentityRole(ENV.CustomerRole));
+            }
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
@@ -89,14 +92,22 @@ namespace Store.Areas.Identity.Pages.Account
             if (ModelState.IsValid)
             {
                 var user = new AppUser { UserName = Input.Email, Email = Input.Email,
-                    Name=Input.Name,
-                    Surname=Input.Surname,
-                    Age=Input.Age,
+                    FullName=Input.FullName,
                     FaceBook=Input.FaceBook,
                     Telegram=Input.Telegram };
                 var result = await _userManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
                 {
+
+                    if (User.IsInRole(ENV.AdminRole))
+                    {
+                        await _userManager.AddToRoleAsync(user, ENV.AdminRole);
+                    }
+                    else
+                    {
+                        await _userManager.AddToRoleAsync(user, ENV.CustomerRole);
+                    }
+
                     _logger.LogInformation("User created a new account with password.");
 
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);

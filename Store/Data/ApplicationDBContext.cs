@@ -17,5 +17,6 @@ namespace Store.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<AppUser> AppUser { get; set; }
+        public DbSet<ShoppingCart> ShoppingCart { get; set; }
     }
 }

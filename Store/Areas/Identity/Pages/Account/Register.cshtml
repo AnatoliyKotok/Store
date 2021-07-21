@@ -5,7 +5,14 @@
 }
 
 <h1>@ViewData["Title"]</h1>
-
+@if (User.IsInRole(Store.ENV.AdminRole))
+{
+    <h1>Register admin user</h1>
+}
+else
+{
+    <h1>Register</h1>
+}
 
 <form asp-route-returnUrl="@Model.ReturnUrl" method="post" class="col-6">
     <h4>Create a new account.</h4>
@@ -16,31 +23,12 @@
             <div class="input-group-prepend">
                 <span class="input-group-text"> <i class="fa fa-user"></i> </span>
             </div>
-            <input asp-for="Input.Name" class="form-control" placeholder="Name" type="text">
+            <input asp-for="Input.FullName" class="form-control" placeholder="Full Name" type="text">
 
         </div>
-        <span asp-validation-for="Input.Name" class="text-danger"></span>
+        <span asp-validation-for="Input.FullName" class="text-danger"></span>
     </div>
-    <div class="form-group">
-        <div class="form-group input-group">
-            <div class="input-group-prepend">
-                <span class="input-group-text"> <i class="fa fa-user"></i> </span>
-            </div>
-            <input asp-for="Input.Surname" class="form-control" placeholder="Surname" type="text">
 
-        </div>
-        <span asp-validation-for="Input.Surname" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <div class="form-group input-group">
-            <div class="input-group-prepend">
-                <span class="input-group-text"> <i class="fa fa-user"></i> </span>
-            </div>
-            <input asp-for="Input.Age" class="form-control" placeholder="Age" type="number">
-
-        </div>
-        <span asp-validation-for="Input.Age" class="text-danger"></span>
-    </div>
     <div class="form-group">
         <div class="form-group input-group">
             <div class="input-group-prepend">
@@ -91,7 +79,15 @@
         </div>
         <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
     </div>
+    @if (User.IsInRole(Store.ENV.AdminRole))
+    {
+        <button type="submit" class="btn btn-primary col-6">Register new Admin</button>
+    }
+    else
+    {
         <button type="submit" class="btn btn-primary col-6">Register</button>
+    }
+
 </form>
 
 

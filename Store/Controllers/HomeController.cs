@@ -67,7 +67,11 @@ namespace Store.Controllers
                 shoppingCartList = HttpContext.Session.Get<List<ShoppingCart>>(ENV.SessinCart);
             }
             shoppingCartList.Add(new ShoppingCart { ProductId = id });
+            _db.ShoppingCart.Add(new ShoppingCart { ProductId = id });
+            _db.SaveChanges();
             HttpContext.Session.Set(ENV.SessinCart, shoppingCartList);
+           
+           
             return RedirectToAction(nameof(Index));
         }
         public IActionResult RemoveFromCart(int id)
@@ -83,7 +87,10 @@ namespace Store.Controllers
             if (cart != null)
             {
                 shoppingCartList.Remove(cart);
+                _db.ShoppingCart.Remove(cart);
+
             }
+            _db.SaveChanges();
             HttpContext.Session.Set(ENV.SessinCart, shoppingCartList);
             return RedirectToAction(nameof(Index));
         }
